@@ -56,7 +56,7 @@ fi
 
 log "Installing Python dependencies."
 
-"$PROJECT_DIR/venv/bin/pip" install -r requirements.txt >> "$LOG_FILE" 2>&1
+"$PROJECT_DIR/venv/bin/pip" install --quiet --disable-pip-version-check -r requirements.txt >> "$LOG_FILE" 2>&1
 
 
 checkstatus $? "Dependency installation failed."
