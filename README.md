@@ -18,6 +18,7 @@ The app is intentionally simple so it can be tested locally first, then deployed
 │   ├── __init__.py
 │   └── main.py
 ├── requirements.txt
+├── update.sh
 ├── README.md
 └── .gitignore
 ```
@@ -65,10 +66,24 @@ This project can later be cloned on an Ubuntu server under a path such as:
 /home/ubuntu/apps/fastapi-task
 ```
 
-For server deployment, the app can be run with Uvicorn on port `8000`:
+For server deployment behind Nginx, the app can be run with Uvicorn on local
+port `8000`:
 
 ```bash
-uvicorn app.main:app --host 0.0.0.0 --port 8000
+uvicorn app.main:app --host 127.0.0.1 --port 8000
 ```
 
-Nginx, systemd, HTTPS, and update scripts are intentionally not included yet.
+## Server Update Script
+
+After the project is deployed on the server and the `fastapi-task` systemd
+service exists, run:
+
+```bash
+./update.sh
+```
+
+The script pulls the latest code from GitHub, installs dependencies, restarts
+the `fastapi-task` service, checks `/health`, and writes logs to
+`logs/update.log`.
+
+HTTPS is intentionally not included yet.
