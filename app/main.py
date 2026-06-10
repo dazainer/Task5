@@ -26,13 +26,3 @@ def health_check() -> dict[str, str]:
         "status": "OK",
         "service": "fastapi-task",
     }
-
-
-@app.get("/info")
-def info() -> dict[str, str]:
-    """Return basic information about the API."""
-    return {
-        "title": "FastAPI DevOps Task 5",
-        "version": "1.0.0",
-        "description": "A simple FastAPI app for Ubuntu deployment.",
-    }
