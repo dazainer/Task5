@@ -27,6 +27,12 @@ fail() {
     exit 1
 }
 
+checkstatus() {
+    if [ $1 -ne 0 ]; then
+        fail "$2"
+    fi
+}
+
 mkdir -p "$LOG_DIR" || exit 1
 
 log "Update started."
@@ -38,9 +44,9 @@ log "Pulling latest changes from GitHub."
 
 git pull --ff-only origin "$BRANCH" >> "$LOG_FILE" 2>&1
 
-if [ $? -ne 0 ]; then
-    fail "Git pull failed."
-fi
+
+checkstatus $? "Git pull failed."
+
 
 log "Git pull completed successfully."
 
@@ -52,35 +58,35 @@ log "Installing Python dependencies."
 
 "$PROJECT_DIR/venv/bin/pip" install -r requirements.txt >> "$LOG_FILE" 2>&1
 
-if [ $? -ne 0 ]; then
-    fail "Dependency installation failed."
-fi
+
+checkstatus $? "Dependency installation failed."
+
 
 log "Dependencies installed successfully."
 log "Restarting systemd service: $SERVICE_NAME."
 
 sudo systemctl restart "$SERVICE_NAME" >> "$LOG_FILE" 2>&1
 
-if [ $? -ne 0 ]; then
-    fail "Service restart failed."
-fi
+
+checkstatus $? "Service restart failed."
+
 
 sleep 2
 
 sudo systemctl is-active --quiet "$SERVICE_NAME"
 
-if [ $? -ne 0 ]; then
-    fail "Service is not active after restart."
-fi
+
+checkstatus $? "Service is not active after restart."
+
 
 log "Service is active after restart."
 log "Checking local health endpoint."
 
 curl -fsS http://127.0.0.1:8000/health >> "$LOG_FILE" 2>&1
 
-if [ $? -ne 0 ]; then
-    fail "Health check failed."
-fi
+
+checkstatus $? "Health check failed."
+
 
 log "Health check passed."
 log "Update completed successfully."
