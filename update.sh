@@ -12,6 +12,8 @@ BRANCH="main"
 PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LOG_DIR="$PROJECT_DIR/logs"
 LOG_FILE="$LOG_DIR/update.log"
+SERVICE_CHECK_RETRIES=10
+HEALTH_CHECK_RETRIES=10
 
 log() {
     echo "[$(date +"%Y-%m-%d %H:%M:%S")] $1" | tee -a "$LOG_FILE"
@@ -28,9 +30,41 @@ fail() {
 }
 
 checkstatus() {
-    if [ $1 -ne 0 ]; then
+    if [ "$1" -ne 0 ]; then
         fail "$2"
     fi
+}
+
+wait_for_service() {
+    local attempt=1
+
+    while [ "$attempt" -le "$SERVICE_CHECK_RETRIES" ]; do
+        if sudo systemctl is-active --quiet "$SERVICE_NAME"; then
+            return 0
+        fi
+
+        log "Service is not active yet. Retry $attempt/$SERVICE_CHECK_RETRIES."
+        sleep 1
+        attempt=$((attempt + 1))
+    done
+
+    return 1
+}
+
+wait_for_health() {
+    local attempt=1
+
+    while [ "$attempt" -le "$HEALTH_CHECK_RETRIES" ]; do
+        if curl -fsS http://127.0.0.1:8000/health >> "$LOG_FILE" 2>&1; then
+            return 0
+        fi
+
+        log "Health check is not ready yet. Retry $attempt/$HEALTH_CHECK_RETRIES."
+        sleep 1
+        attempt=$((attempt + 1))
+    done
+
+    return 1
 }
 
 mkdir -p "$LOG_DIR" || exit 1
@@ -71,10 +105,9 @@ sudo systemctl restart "$SERVICE_NAME" >> "$LOG_FILE" 2>&1
 checkstatus $? "Service restart failed."
 
 
-sleep 2
+log "Waiting for service to become active."
 
-sudo systemctl is-active --quiet "$SERVICE_NAME"
-
+wait_for_service
 
 checkstatus $? "Service is not active after restart."
 
@@ -82,7 +115,7 @@ checkstatus $? "Service is not active after restart."
 log "Service is active after restart."
 log "Checking local health endpoint."
 
-curl -fsS http://127.0.0.1:8000/health >> "$LOG_FILE" 2>&1
+wait_for_health
 
 
 checkstatus $? "Health check failed."
