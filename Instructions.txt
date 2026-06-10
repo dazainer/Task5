@@ -1,0 +1,20 @@
+New Task [deploying an application behind Nginx and managing it as a service]
+
+Tasks:
+
+1.⁠ ⁠Create a simple FastAPI application (e.g. / and /health endpoints).
+2.⁠ ⁠Push the application to a GitHub repository.
+3.⁠ ⁠Deploy it on the server and run it using uvicorn on port 8000
+4.⁠ ⁠Configure Nginx as a reverse proxy and verify the application is accessible through the server IP.
+5.⁠ ⁠Create a systemd service that starts automatically on boot and restarts on failure.
+6.⁠ ⁠Create a simple update script that:
+   * Pulls the latest code from GitHub
+   * Restarts the application service
+   * Logs the update date/time and status
+
+7.⁠ ⁠Verify the application is working and accessible through the browser.
+
+Follow-up Task:
+
+1.⁠ ⁠Configure HTTPS for the application using Nginx and a self-signed certificate.
+2.⁠ ⁠Redirect all HTTP traffic to HTTPS.
